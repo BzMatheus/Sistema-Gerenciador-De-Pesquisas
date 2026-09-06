@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Pesquisa</title>
+</head>
+<body>
+    <head>
+        <h1>CRIAR PESQUISA</h1>
+    </head>
+    <main>
+        <!--ONDE O USUARIO CRIA A PESQUISA-->
+        <form action="/CriarPesquisa" method="get">
+            <label for="Nome">Nome</label>
+            <input type="text" name="Nome">
+            <label for="Descrição">Descrição</label>
+            <input type="text" name="Descrição">
+            <label for="periodo_inicio">Perido de inicio da Aplicação</label>
+            <input type="date" name="periodo_inicio">
+            <label for="periodo_final">Perido de fim da Aplicação</label>
+            <input type="date" name="periodo_final">
+            <button type="submit" name="Enviar">Criar</button>
+        </form>
+    </main>
+</body>
+</html>

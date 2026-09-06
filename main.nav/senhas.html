@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>GERAR SENHAS</h1>
+    <form action="/GerarSenhas" method="get">
+        <label for="Categoria">Selecione a categoria</label>
+        <br>
+        <input type="radio" name="Categoria">
+        <label for="Professores">Professores</label>
+        <input type="radio" name="Categoria">
+        <label for="Funcionarios">Funcionarios</label>
+        <input type="radio" name="Categoria">
+        <label for="Alunos">Alunos</label>
+        <br>
+        <!--Quantidade de Senhas Geradas-->
+        <label for="Senhas">Quantidade de senhas a ser geradas:</label>
+        <input type="number" name="GerarSenhas">
+        <input type="submit" name="Enviar">
+
+        
+    </form>
+</body>
+</html>
