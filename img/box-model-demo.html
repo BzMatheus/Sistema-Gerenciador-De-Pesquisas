@@ -1,0 +1,1097 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Box Model na Prática</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FAFAF7;
+    --surface:#FFFFFF;
+    --surface-2:#F2EFE7;
+    --line:#E6E1D3;
+    --text:#221D14;
+    --text-dim:#6E6453;
+    --accent:#F59E0B;
+    --accent-ink:#7A4102;
+    --accent-soft:#FDECC8;
+    --code-bg:#211C13;
+    --code-text:#F3ECD9;
+    --code-dim:#B4A886;
+    --mm-content:#3B82F6;
+    --mm-content-soft:#DCE9FE;
+    --mm-padding:#16A34A;
+    --mm-padding-soft:#DAF1E2;
+    --mm-border:#CA8A04;
+    --mm-border-soft:#F6E6B4;
+    --mm-margin:#F59E0B;
+    --mm-margin-soft:#FCEAC7;
+    --danger:#DC2626;
+    --radius-lg:18px;
+    --radius-md:12px;
+    --shadow:0 1px 2px rgba(30,24,10,.04), 0 8px 24px -12px rgba(30,24,10,.18);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#171310;
+      --surface:#211B15;
+      --surface-2:#2A2319;
+      --line:#3B3223;
+      --text:#F3EEE2;
+      --text-dim:#B3A88F;
+      --accent:#F5A524;
+      --accent-ink:#FFD98C;
+      --accent-soft:#3D2E12;
+      --code-bg:#100D09;
+      --code-text:#F3ECD9;
+      --code-dim:#8A7F65;
+      --mm-content:#60A5FA;
+      --mm-content-soft:#1E3354;
+      --mm-padding:#4ADE80;
+      --mm-padding-soft:#1C3A28;
+      --mm-border:#FACC15;
+      --mm-border-soft:#40340F;
+      --mm-margin:#FDBA74;
+      --mm-margin-soft:#402C10;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 28px -12px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#171310;
+    --surface:#211B15;
+    --surface-2:#2A2319;
+    --line:#3B3223;
+    --text:#F3EEE2;
+    --text-dim:#B3A88F;
+    --accent:#F5A524;
+    --accent-ink:#FFD98C;
+    --accent-soft:#3D2E12;
+    --code-bg:#100D09;
+    --code-text:#F3ECD9;
+    --code-dim:#8A7F65;
+    --mm-content:#60A5FA;
+    --mm-content-soft:#1E3354;
+    --mm-padding:#4ADE80;
+    --mm-padding-soft:#1C3A28;
+    --mm-border:#FACC15;
+    --mm-border-soft:#40340F;
+    --mm-margin:#FDBA74;
+    --mm-margin-soft:#402C10;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 28px -12px rgba(0,0,0,.6);
+  }
+
+  *,*::before,*::after{box-sizing:border-box;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',system-ui,sans-serif;
+    line-height:1.55;
+  }
+  h1,h2,h3,h4{
+    font-family:'Sora',system-ui,sans-serif;
+    line-height:1.15;
+    text-wrap:balance;
+    margin:0;
+  }
+  code, pre, .mono{ font-family:'JetBrains Mono', ui-monospace, monospace; }
+  a{ color:var(--accent-ink); }
+  ::selection{ background:var(--accent-soft); }
+
+  .layout{
+    display:grid;
+    grid-template-columns:248px 1fr;
+    max-width:1240px;
+    margin:0 auto;
+    align-items:start;
+  }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{
+    position:sticky;
+    top:calc(env(safe-area-inset-top,0px) + 16px);
+    height:calc(100vh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 32px);
+    padding:24px 12px 24px 20px;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+  }
+  .brand{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+    padding-bottom:14px;
+    border-bottom:1px solid var(--line);
+  }
+  .brand .eyebrow{
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:.09em;
+    text-transform:uppercase;
+    color:var(--accent-ink);
+  }
+  .brand strong{
+    font-family:'Sora',sans-serif;
+    font-size:17px;
+  }
+  .brand span.sub{ font-size:12.5px; color:var(--text-dim); }
+
+  nav.toc{ display:flex; flex-direction:column; gap:2px; }
+  nav.toc a{
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+    padding:7px 10px;
+    border-radius:9px;
+    color:var(--text-dim);
+    text-decoration:none;
+    font-size:13.5px;
+    font-weight:500;
+  }
+  nav.toc a .n{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-dim); opacity:.7; width:16px; }
+  nav.toc a:hover{ background:var(--surface-2); color:var(--text); }
+  nav.toc a.active{ background:var(--accent-soft); color:var(--accent-ink); font-weight:700; }
+  nav.toc a.active .n{ color:var(--accent-ink); opacity:1; }
+
+  .sidebar-foot{
+    margin-top:auto;
+    font-size:11.5px;
+    color:var(--text-dim);
+    padding-top:14px;
+    border-top:1px solid var(--line);
+  }
+
+  /* ---------- Topbar (mobile) ---------- */
+  .topbar{
+    display:none;
+    position:sticky;
+    top:env(safe-area-inset-top,0px);
+    z-index:20;
+    background:var(--bg);
+    border-bottom:1px solid var(--line);
+    padding:12px 16px;
+  }
+  .topbar-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .topbar strong{ font-family:'Sora',sans-serif; font-size:15px; }
+  .topbar-scroll{
+    display:flex; gap:6px; overflow-x:auto; padding-top:10px;
+    -webkit-overflow-scrolling:touch;
+  }
+  .topbar-scroll a{
+    flex:0 0 auto;
+    font-size:12.5px; font-weight:600;
+    padding:7px 12px;
+    border-radius:999px;
+    background:var(--surface-2);
+    color:var(--text-dim);
+    text-decoration:none;
+    white-space:nowrap;
+  }
+  .topbar-scroll a.active{ background:var(--accent); color:#241503; }
+
+  /* ---------- Main ---------- */
+  main{
+    padding:36px 28px 90px;
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    gap:56px;
+  }
+
+  .hero{
+    padding:34px 32px;
+    background:linear-gradient(155deg, var(--accent-soft), transparent 60%), var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow);
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+  .hero .eyebrow{
+    font-size:11.5px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--accent-ink);
+  }
+  .hero h1{ font-size:clamp(26px,4vw,38px); }
+  .hero p{ max-width:56ch; color:var(--text-dim); font-size:15.5px; }
+  .hero .pillrow{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+  .pill{
+    font-size:12px; font-weight:600; padding:6px 12px; border-radius:999px;
+    background:var(--surface-2); border:1px solid var(--line); color:var(--text-dim);
+  }
+
+  section.block{ display:flex; flex-direction:column; gap:16px; scroll-margin-top:24px; }
+  .block-head{ display:flex; flex-direction:column; gap:6px; }
+  .block-head .kicker{
+    font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; color:var(--accent-ink);
+  }
+  .block-head h2{ font-size:24px; }
+  .block-head p.lead{ color:var(--text-dim); font-size:14.5px; max-width:70ch; }
+
+  .card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow);
+    padding:24px;
+  }
+  .grid-2{ display:grid; grid-template-columns:1.1fr 1fr; gap:20px; align-items:start; }
+  .grid-3{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+
+  .stage{
+    background:var(--surface-2);
+    border:1px dashed var(--line);
+    border-radius:var(--radius-md);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:28px;
+    min-height:220px;
+    overflow:auto;
+  }
+
+  .controls{ display:flex; flex-direction:column; gap:14px; }
+  .ctrl{ display:flex; flex-direction:column; gap:6px; }
+  .ctrl-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .ctrl label{ font-size:12.5px; font-weight:600; color:var(--text-dim); }
+  .ctrl output{ font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; color:var(--accent-ink); background:var(--accent-soft); padding:2px 7px; border-radius:6px; }
+  input[type="range"]{
+    -webkit-appearance:none; appearance:none; width:100%; height:5px; border-radius:99px;
+    background:var(--line); outline:none;
+  }
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none; width:16px; height:16px; border-radius:50%;
+    background:var(--accent); border:2px solid var(--surface); box-shadow:0 0 0 1px var(--accent);
+    cursor:pointer;
+  }
+  input[type="range"]::-moz-range-thumb{
+    width:16px; height:16px; border-radius:50%; background:var(--accent); border:2px solid var(--surface); box-shadow:0 0 0 1px var(--accent); cursor:pointer;
+  }
+  select, .btn{
+    font:inherit; font-size:13px; font-weight:600;
+    border:1px solid var(--line); background:var(--surface-2); color:var(--text);
+    padding:8px 12px; border-radius:9px; cursor:pointer;
+  }
+  .btn:hover, select:hover{ border-color:var(--accent); }
+  .btn.active{ background:var(--accent); color:#241503; border-color:var(--accent); }
+  .btnrow{ display:flex; flex-wrap:wrap; gap:7px; }
+
+  .readout{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12.5px;
+    background:var(--code-bg); color:var(--code-text);
+    border-radius:var(--radius-md);
+    padding:14px 16px;
+    line-height:1.7;
+  }
+  .readout .k{ color:var(--code-dim); }
+  .readout b{ color:var(--accent); }
+
+  pre.code{
+    background:var(--code-bg); color:var(--code-text);
+    border-radius:var(--radius-md);
+    padding:16px 18px;
+    overflow-x:auto;
+    font-size:12.8px;
+    line-height:1.65;
+  }
+  pre.code .c{ color:var(--code-dim); }
+  pre.code .p{ color:#F5A9C4; }
+  pre.code .v{ color:#A5D6FF; }
+
+  details.codewrap{ border:1px solid var(--line); border-radius:var(--radius-md); overflow:hidden; }
+  details.codewrap summary{
+    cursor:pointer; list-style:none; padding:10px 14px; font-size:12.5px; font-weight:700;
+    color:var(--text-dim); background:var(--surface-2); display:flex; align-items:center; gap:8px;
+  }
+  details.codewrap summary::-webkit-details-marker{ display:none; }
+  details.codewrap summary::before{ content:"▸"; font-size:11px; transition:transform .15s; }
+  details.codewrap[open] summary::before{ transform:rotate(90deg); }
+  details.codewrap pre.code{ border-radius:0; margin:0; }
+
+  /* ---------- Box model concentric diagram ---------- */
+  .mm-margin{
+    background:repeating-linear-gradient(45deg, var(--mm-margin-soft), var(--mm-margin-soft) 8px, var(--surface-2) 8px, var(--surface-2) 16px);
+    border-radius:14px;
+    position:relative;
+    transition:padding .12s ease;
+  }
+  .mm-border{
+    background:var(--mm-border-soft);
+    border-color:var(--mm-border);
+    border-style:solid;
+    position:relative;
+    transition:all .12s ease;
+  }
+  .mm-padding{
+    background:var(--mm-padding-soft);
+    position:relative;
+    transition:padding .12s ease;
+  }
+  .mm-content{
+    background:var(--mm-content);
+    color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    text-align:center;
+    font-size:11.5px; font-weight:700;
+    border-radius:4px;
+    transition:width .12s ease, height .12s ease;
+    padding:4px;
+  }
+  .mm-tag{
+    position:absolute; top:4px; left:8px;
+    font-size:9.5px; font-weight:800; letter-spacing:.06em; text-transform:uppercase;
+    padding:2px 6px; border-radius:5px; color:#fff;
+  }
+  .mm-tag.margin{ background:var(--mm-margin); color:#241503; }
+  .mm-tag.border{ background:var(--mm-border); color:#241503; }
+  .mm-tag.padding{ background:var(--mm-padding); color:#04220F; }
+
+  .legend{ display:flex; flex-wrap:wrap; gap:10px; }
+  .legend .item{ display:flex; align-items:center; gap:7px; font-size:12.5px; font-weight:600; color:var(--text-dim); }
+  .legend .sw{ width:13px; height:13px; border-radius:4px; flex:0 0 auto; }
+
+  /* ---------- Edge picker (padding/margin shorthand) ---------- */
+  .edgebox{ position:relative; width:220px; height:150px; margin:0 auto; }
+  .edgebox .zone{
+    position:absolute; display:flex; align-items:center; justify-content:center;
+    font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:700; color:#241503;
+    background:var(--accent-soft); border-radius:6px; transition:background .15s;
+  }
+  .edgebox .zone.hot{ background:var(--accent); }
+  .edgebox .zone.top{ top:0; left:34px; right:34px; height:30px; }
+  .edgebox .zone.bottom{ bottom:0; left:34px; right:34px; height:30px; }
+  .edgebox .zone.left{ left:0; top:0; bottom:0; width:30px; }
+  .edgebox .zone.right{ right:0; top:0; bottom:0; width:30px; }
+  .edgebox .zone.center{ left:34px; right:34px; top:34px; bottom:34px; background:var(--surface); border:1.5px dashed var(--line); color:var(--text-dim); }
+
+  table.demo-table{ width:100%; border-collapse:collapse; font-size:13px; }
+  table.demo-table th, table.demo-table td{ padding:10px 12px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
+  table.demo-table th{ font-size:11.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--text-dim); font-weight:700; }
+  table.demo-table tr:last-child td{ border-bottom:none; }
+  .tbl-wrap{ overflow-x:auto; }
+
+  .note{
+    display:flex; gap:10px; padding:14px 16px; border-radius:var(--radius-md);
+    background:var(--accent-soft); border:1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+    font-size:13.5px;
+  }
+  .note b{ color:var(--accent-ink); }
+
+  /* ---------- Display demo boxes ---------- */
+  .disp-stage{ line-height:0; }
+  .disp-stage p{ line-height:1.7; font-size:14px; }
+  .disp-item{
+    background:var(--mm-content-soft); color:var(--mm-content);
+    border:1.5px solid var(--mm-content);
+    font-weight:700; font-size:12.5px; font-family:'JetBrains Mono',monospace;
+    padding:8px 12px; border-radius:6px;
+  }
+
+  /* ---------- Desafio niveis ---------- */
+  .caixa{ display:block; padding:20px; border:2px solid var(--accent); margin:10px; background-color:var(--accent-soft); border-radius:8px; font-size:13px; font-weight:700; }
+  .caixa-inline{ display:inline-block; width:150px; height:100px; padding:12px; border:2px solid var(--accent); margin:8px; vertical-align:top; background:var(--accent-soft); border-radius:8px; font-size:12.5px; font-weight:700; }
+  .nivel3-container{ width:100%; max-width:420px; margin:0 auto; padding:18px; border:1px solid var(--line); background:var(--surface-2); border-radius:10px; text-align:center; font-size:13px; }
+  .nivel4-box{ width:220px; padding:24px; border:5px solid var(--accent); background:var(--accent-soft); border-radius:10px; text-align:center; font-size:12.5px; font-weight:700; margin:0 auto; }
+
+  footer.page{
+    max-width:1240px; margin:0 auto; padding:0 28px 60px 248px;
+    color:var(--text-dim); font-size:12.5px;
+  }
+
+  @media (max-width:920px){
+    .layout{ grid-template-columns:1fr; }
+    .sidebar{ display:none; }
+    .topbar{ display:block; }
+    main{ padding:24px 18px 80px; gap:44px; }
+    .grid-2{ grid-template-columns:1fr; }
+    .grid-3{ grid-template-columns:1fr 1fr; }
+    footer.page{ padding:0 18px 50px; }
+  }
+  @media (max-width:520px){
+    .grid-3{ grid-template-columns:1fr; }
+    .hero{ padding:24px 20px; }
+  }
+</style>
+</head>
+<body>
+
+
+<div class="topbar">
+  <div class="topbar-row">
+    <strong>📦 Box Model na Prática</strong>
+    <span class="pill">Aula 07</span>
+  </div>
+  <div class="topbar-scroll" id="topbarScroll">
+    <a href="#boxmodel" class="tlink">Box Model</a>
+    <a href="#padding" class="tlink">Padding</a>
+    <a href="#border" class="tlink">Border</a>
+    <a href="#outline" class="tlink">Outline</a>
+    <a href="#margin" class="tlink">Margin</a>
+    <a href="#boxsizing" class="tlink">box-sizing</a>
+    <a href="#display" class="tlink">Display</a>
+    <a href="#devtools" class="tlink">DevTools</a>
+    <a href="#desafio" class="tlink">Desafio</a>
+    <a href="#exercicios" class="tlink">Exercícios</a>
+  </div>
+</div>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="eyebrow">Aula 07 · Prof. Anderson Pazin</span>
+      <strong>📦 Box Model na Prática</strong>
+      <span class="sub">Desenvolvimento Web — ADS, 2º semestre</span>
+    </div>
+    <nav class="toc" id="toc">
+      <a href="#boxmodel" class="slink"><span class="n">01</span>Box Model</a>
+      <a href="#padding" class="slink"><span class="n">02</span>Padding</a>
+      <a href="#border" class="slink"><span class="n">03</span>Border</a>
+      <a href="#outline" class="slink"><span class="n">04</span>Outline</a>
+      <a href="#margin" class="slink"><span class="n">05</span>Margin</a>
+      <a href="#boxsizing" class="slink"><span class="n">06</span>box-sizing</a>
+      <a href="#display" class="slink"><span class="n">07</span>Display</a>
+      <a href="#devtools" class="slink"><span class="n">08</span>DevTools</a>
+      <a href="#desafio" class="slink"><span class="n">09</span>Desafio</a>
+      <a href="#exercicios" class="slink"><span class="n">10</span>Exercícios</a>
+    </nav>
+    <div class="sidebar-foot">Ajuste os controles — cada demonstração é ao vivo, sem necessidade de escrever código.</div>
+  </aside>
+
+  <main>
+    <div class="hero">
+      <span class="eyebrow">Apostila · Desenvolvimento Web</span>
+      <h1>content · padding · border · margin · box-sizing · display</h1>
+      <p>Uma demonstração interativa dos conceitos da Aula 07. Mexa nos controles de cada seção para ver, ao vivo, como cada propriedade CSS muda a caixa na tela — a mesma lógica que o Chrome DevTools mostra no painel Computed.</p>
+      <div class="pillrow">
+        <span class="pill">🟧 margin</span>
+        <span class="pill">🟨 border</span>
+        <span class="pill">🟩 padding</span>
+        <span class="pill">🟦 content</span>
+      </div>
+    </div>
+
+    <!-- ===================== 1. BOX MODEL ===================== -->
+    <section class="block" id="boxmodel">
+      <div class="block-head">
+        <span class="kicker">01 · O coração do CSS</span>
+        <h2>O Box Model</h2>
+        <p class="lead">Todo elemento HTML é uma caixa retangular formada por 4 camadas concêntricas. Ajuste cada uma e observe a caixa crescer de dentro para fora.</p>
+      </div>
+      <div class="card grid-2">
+        <div>
+          <div class="stage" id="bmStage">
+            <div class="mm-margin" id="bmMargin">
+              <span class="mm-tag margin">margin</span>
+              <div class="mm-border" id="bmBorder">
+                <span class="mm-tag border">border</span>
+                <div class="mm-padding" id="bmPadding">
+                  <span class="mm-tag padding">padding</span>
+                  <div class="mm-content" id="bmContent">content</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="legend" style="margin-top:14px;">
+            <div class="item"><span class="sw" style="background:var(--mm-margin)"></span>margin — sempre transparente</div>
+            <div class="item"><span class="sw" style="background:var(--mm-border)"></span>border — largura + estilo + cor</div>
+            <div class="item"><span class="sw" style="background:var(--mm-padding)"></span>padding — herda o fundo do elemento</div>
+            <div class="item"><span class="sw" style="background:var(--mm-content)"></span>content — texto, imagens, filhos</div>
+          </div>
+        </div>
+        <div class="controls">
+          <div class="ctrl">
+            <div class="ctrl-row"><label>width do conteúdo</label><output id="oW">120px</output></div>
+            <input type="range" id="bmW" min="40" max="200" value="120">
+          </div>
+          <div class="ctrl">
+            <div class="ctrl-row"><label>height do conteúdo</label><output id="oH">60px</output></div>
+            <input type="range" id="bmH" min="30" max="140" value="60">
+          </div>
+          <div class="ctrl">
+            <div class="ctrl-row"><label>padding</label><output id="oP">16px</output></div>
+            <input type="range" id="bmP" min="0" max="40" value="16">
+          </div>
+          <div class="ctrl">
+            <div class="ctrl-row"><label>border-width</label><output id="oB">2px</output></div>
+            <input type="range" id="bmB" min="0" max="16" value="2">
+          </div>
+          <div class="ctrl">
+            <div class="ctrl-row"><label>margin</label><output id="oM">18px</output></div>
+            <input type="range" id="bmM" min="0" max="40" value="18">
+          </div>
+          <div class="readout" id="bmReadout"></div>
+        </div>
+      </div>
+      <details class="codewrap">
+        <summary>Ver CSS equivalente</summary>
+        <pre class="code" id="bmCode"></pre>
+      </details>
+    </section>
+
+    <!-- ===================== 2. PADDING ===================== -->
+    <section class="block" id="padding">
+      <div class="block-head">
+        <span class="kicker">02 · Espaço interno</span>
+        <h2>Padding — sintaxe shorthand</h2>
+        <p class="lead">O padding aceita de 1 a 4 valores. Clique em cada shorthand para ver quais lados são afetados.</p>
+      </div>
+      <div class="card grid-2">
+        <div>
+          <div class="stage">
+            <div class="edgebox">
+              <div class="zone top" id="pdTop">10</div>
+              <div class="zone right" id="pdRight">10</div>
+              <div class="zone bottom" id="pdBottom">10</div>
+              <div class="zone left" id="pdLeft">10</div>
+              <div class="zone center">conteúdo</div>
+            </div>
+          </div>
+          <div class="readout" id="pdReadout" style="margin-top:14px;"></div>
+        </div>
+        <div class="controls">
+          <div class="btnrow" id="pdButtons">
+            <button class="btn active" data-v="10">padding: 10px</button>
+            <button class="btn" data-v="10 20">padding: 10px 20px</button>
+            <button class="btn" data-v="10 20 15">padding: 10px 20px 15px</button>
+            <button class="btn" data-v="10 20 15 25">padding: 10px 20px 15px 25px</button>
+          </div>
+          <div class="tbl-wrap">
+            <table class="demo-table">
+              <thead><tr><th>Sintaxe</th><th>Lados afetados</th></tr></thead>
+              <tbody>
+                <tr><td class="mono">1 valor</td><td>Todos os 4 lados iguais</td></tr>
+                <tr><td class="mono">2 valores</td><td>Vertical · Horizontal</td></tr>
+                <tr><td class="mono">3 valores</td><td>Top · Horizontal · Bottom</td></tr>
+                <tr><td class="mono">4 valores</td><td>Top · Right · Bottom · Left (sentido horário)</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="note">💡 <span><b>Importante:</b> o padding não aceita valores negativos e herda o <code>background-color</code> do elemento.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 3. BORDER ===================== -->
+    <section class="block" id="border">
+      <div class="block-head">
+        <span class="kicker">03 · A borda do elemento</span>
+        <h2>Border &amp; border-radius</h2>
+        <p class="lead">A border exige 3 valores — largura, estilo e cor. Combine com border-radius para cantos arredondados.</p>
+      </div>
+      <div class="card grid-2">
+        <div class="stage">
+          <div id="brBox" style="width:170px;height:110px;display:flex;align-items:center;justify-content:center;background:var(--mm-border-soft);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;">.elemento</div>
+        </div>
+        <div class="controls">
+          <div class="ctrl">
+            <label>border-style</label>
+            <div class="btnrow" id="brStyleButtons">
+              <button class="btn active" data-v="solid">solid</button>
+              <button class="btn" data-v="dashed">dashed</button>
+              <button class="btn" data-v="dotted">dotted</button>
+              <button class="btn" data-v="double">double</button>
+              <button class="btn" data-v="none">none</button>
+            </div>
+          </div>
+          <div class="ctrl">
+            <div class="ctrl-row"><label>border-width</label><output id="oBrW">3px</output></div>
+            <input type="range" id="brW" min="1" max="12" value="3">
+          </div>
+          <div class="ctrl">
+            <label>border-radius</label>
+            <div class="btnrow" id="brRadiusButtons">
+              <button class="btn" data-v="0">0 (reto)</button>
+              <button class="btn active" data-v="8">8px</button>
+              <button class="btn" data-v="8 0 8 0">8px 0 8px 0</button>
+              <button class="btn" data-v="999">999px (pílula)</button>
+              <button class="btn" data-v="50%">50% (círculo)</button>
+            </div>
+          </div>
+          <div class="readout" id="brReadout"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="tbl-wrap">
+          <table class="demo-table">
+            <thead><tr><th>Estilo</th><th>Aparência</th><th>Uso comum</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">solid</td><td>Linha sólida contínua</td><td>Bordas de cards, inputs, containers</td></tr>
+              <tr><td class="mono">dashed</td><td>Linha tracejada</td><td>Áreas de upload, placeholders</td></tr>
+              <tr><td class="mono">dotted</td><td>Linha pontilhada</td><td>Decoração, separadores sutis</td></tr>
+              <tr><td class="mono">double</td><td>Linha dupla</td><td>Efeitos decorativos</td></tr>
+              <tr><td class="mono">none</td><td>Sem borda</td><td>Remover borda padrão de inputs</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 4. OUTLINE ===================== -->
+    <section class="block" id="outline">
+      <div class="block-head">
+        <span class="kicker">04 · Contorno sem afetar o layout</span>
+        <h2>Outline</h2>
+        <p class="lead">O outline é desenhado por fora do elemento e <b>não</b> ocupa espaço no layout — diferente da border. Clique (ou use Tab) nos botões abaixo: o vizinho nunca se move.</p>
+      </div>
+      <div class="card">
+        <div class="stage" style="gap:14px;">
+          <button class="btn" id="outBtnA" style="padding:12px 22px;">Botão A — tente focar</button>
+          <button class="btn" id="outBtnB" style="padding:12px 22px;">Botão B — vizinho fixo</button>
+        </div>
+        <div class="note" style="margin-top:16px;">♿ <span><b>Acessibilidade:</b> nunca remova o outline sem substituí-lo por outro indicador visual de foco (WCAG 2.4.7) — ele é essencial para navegação por teclado.</span></div>
+      </div>
+    </section>
+
+    <!-- ===================== 5. MARGIN ===================== -->
+    <section class="block" id="margin">
+      <div class="block-head">
+        <span class="kicker">05 · Espaço externo</span>
+        <h2>Margin, auto e margin collapse</h2>
+        <p class="lead">A margin é sempre transparente. Dois efeitos importantes: <code>margin: 0 auto</code> centraliza, e margens verticais entre blocos <b>colapsam</b> — a maior prevalece.</p>
+      </div>
+
+      <div class="card grid-2">
+        <div>
+          <div class="stage" style="padding:12px;">
+            <div id="autoContainer" style="width:70%;padding:14px;border:1px solid var(--line);background:var(--surface-2);border-radius:8px;text-align:center;font-size:12.5px;">
+              container (width fixo)
+              <div id="autoBox" style="width:40%;margin:10px auto;padding:10px;background:var(--accent);color:#241503;border-radius:6px;font-weight:700;font-size:12px;">margin: 0 auto</div>
+            </div>
+          </div>
+          <div class="ctrl" style="margin-top:12px;">
+            <div class="ctrl-row"><label>largura da caixa centralizada</label><output id="oAutoW">40%</output></div>
+            <input type="range" id="autoW" min="15" max="90" value="40">
+          </div>
+        </div>
+
+        <div>
+          <div class="stage" style="flex-direction:column;align-items:stretch;padding:20px;">
+            <div id="collapseWrap" style="display:flex;flex-direction:column;">
+              <div id="collapseA" style="background:var(--mm-content-soft);border:1.5px solid var(--mm-content);border-radius:8px;padding:10px;font-size:12px;font-weight:700;text-align:center;">Elemento A</div>
+              <div id="collapseGapLabel" style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);padding:2px;"></div>
+              <div id="collapseB" style="background:var(--mm-padding-soft);border:1.5px solid var(--mm-padding);border-radius:8px;padding:10px;font-size:12px;font-weight:700;text-align:center;">Elemento B</div>
+            </div>
+          </div>
+          <div class="controls" style="margin-top:12px;">
+            <div class="ctrl">
+              <div class="ctrl-row"><label>margin-bottom de A</label><output id="oCA">30px</output></div>
+              <input type="range" id="collapseAr" min="0" max="60" value="30">
+            </div>
+            <div class="ctrl">
+              <div class="ctrl-row"><label>margin-top de B</label><output id="oCB">20px</output></div>
+              <input type="range" id="collapseBr" min="0" max="60" value="20">
+            </div>
+            <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:var(--text-dim);">
+              <input type="checkbox" id="collapseBreak"> quebrar o collapse (display: flex no pai)
+            </label>
+            <div class="readout" id="collapseReadout"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 6. BOX-SIZING ===================== -->
+    <section class="block" id="boxsizing">
+      <div class="block-head">
+        <span class="kicker">06 · Controlando o cálculo</span>
+        <h2>content-box vs. border-box</h2>
+        <p class="lead">Mesma <code>width</code>, mesmo padding, mesma border — resultado final bem diferente. Ajuste os valores e compare os dois modelos lado a lado.</p>
+      </div>
+      <div class="card">
+        <div class="controls" style="flex-direction:row;flex-wrap:wrap;gap:24px;margin-bottom:20px;">
+          <div class="ctrl" style="min-width:160px;">
+            <div class="ctrl-row"><label>width declarado</label><output id="oBsW">200px</output></div>
+            <input type="range" id="bsW" min="120" max="260" value="200">
+          </div>
+          <div class="ctrl" style="min-width:160px;">
+            <div class="ctrl-row"><label>padding</label><output id="oBsP">20px</output></div>
+            <input type="range" id="bsP" min="0" max="40" value="20">
+          </div>
+          <div class="ctrl" style="min-width:160px;">
+            <div class="ctrl-row"><label>border-width</label><output id="oBsB">2px</output></div>
+            <input type="range" id="bsB" min="0" max="10" value="2">
+          </div>
+        </div>
+        <div class="grid-2">
+          <div>
+            <div class="stage" style="min-height:180px;">
+              <div id="cbBox" style="background:var(--mm-content-soft);border-color:var(--mm-border);border-style:solid;display:flex;align-items:center;justify-content:center;text-align:center;font-size:11.5px;font-weight:700;">content-box</div>
+            </div>
+            <div class="readout" id="cbReadout" style="margin-top:12px;"></div>
+          </div>
+          <div>
+            <div class="stage" style="min-height:180px;">
+              <div id="bbBox" style="box-sizing:border-box;background:var(--mm-padding-soft);border-color:var(--mm-border);border-style:solid;display:flex;align-items:center;justify-content:center;text-align:center;font-size:11.5px;font-weight:700;">border-box</div>
+            </div>
+            <div class="readout" id="bbReadout" style="margin-top:12px;"></div>
+          </div>
+        </div>
+      </div>
+      <div class="note">💡 <span><b>Recomendação:</b> use o reset global <code>*, *::before, *::after { box-sizing: border-box; }</code> — torna o cálculo de layout muito mais previsível.</span></div>
+    </section>
+
+    <!-- ===================== 7. DISPLAY ===================== -->
+    <section class="block" id="display">
+      <div class="block-head">
+        <span class="kicker">07 · Como os elementos se comportam</span>
+        <h2>display: block · inline · inline-block · none</h2>
+        <p class="lead">Troque o display dos três elementos abaixo (dentro de um parágrafo de texto) e observe quebra de linha, largura e espaçamento.</p>
+      </div>
+      <div class="card">
+        <div class="btnrow" id="dispButtons" style="margin-bottom:16px;">
+          <button class="btn active" data-v="block">block</button>
+          <button class="btn" data-v="inline">inline</button>
+          <button class="btn" data-v="inline-block">inline-block</button>
+          <button class="btn" data-v="none">none</button>
+        </div>
+        <div class="stage disp-stage" style="justify-content:flex-start;text-align:left;">
+          <p>
+            Texto de exemplo antes
+            <span class="disp-item" id="d1">Item 1</span>
+            no meio da frase, com
+            <span class="disp-item" id="d2">Item 2</span>
+            mais um pedaço de texto e
+            <span class="disp-item" id="d3">Item 3</span>
+            finalizando o parágrafo para você ver o fluxo.
+          </p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="tbl-wrap">
+          <table class="demo-table">
+            <thead><tr><th>Propriedade</th><th>block</th><th>inline</th><th>inline-block</th></tr></thead>
+            <tbody>
+              <tr><td>Quebra linha</td><td>✅ Sim</td><td>❌ Não</td><td>❌ Não</td></tr>
+              <tr><td>width / height</td><td>✅ Sim</td><td>❌ Não</td><td>✅ Sim</td></tr>
+              <tr><td>margin vertical</td><td>✅ Sim</td><td>❌ Não</td><td>✅ Sim</td></tr>
+              <tr><td>padding</td><td>✅ Sim</td><td>⚠️ Parcial (horizontal)</td><td>✅ Sim</td></tr>
+              <tr><td>Exemplos</td><td class="mono">div, p, h1</td><td class="mono">span, a, strong</td><td class="mono">img, input, button</td></tr>
+              <tr><td>Uso ideal</td><td>Seções e containers</td><td>Texto e links</td><td>Botões e badges</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 8. DEVTOOLS ===================== -->
+    <section class="block" id="devtools">
+      <div class="block-head">
+        <span class="kicker">08 · Inspecionando o Box Model</span>
+        <h2>Chrome DevTools</h2>
+        <p class="lead">O painel Computed do DevTools usa exatamente as mesmas cores desta página para desenhar o diagrama do Box Model.</p>
+      </div>
+      <div class="card grid-2">
+        <div class="legend" style="flex-direction:column;gap:12px;">
+          <div class="item"><span class="sw" style="background:var(--mm-margin)"></span>margin — laranja</div>
+          <div class="item"><span class="sw" style="background:var(--mm-border)"></span>border — amarelo</div>
+          <div class="item"><span class="sw" style="background:var(--mm-padding)"></span>padding — verde</div>
+          <div class="item"><span class="sw" style="background:var(--mm-content)"></span>content — azul</div>
+        </div>
+        <table class="demo-table">
+          <tbody>
+            <tr><td>Abrir DevTools</td><td class="mono">F12 ou Ctrl+Shift+I</td></tr>
+            <tr><td>Inspecionar elemento</td><td class="mono">Ctrl+Shift+C</td></tr>
+            <tr><td>Ver o diagrama</td><td>Aba Elements → painel Computed</td></tr>
+            <tr><td>Editar em tempo real</td><td>Clique nos valores numéricos do diagrama</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===================== 9. DESAFIO ===================== -->
+    <section class="block" id="desafio">
+      <div class="block-head">
+        <span class="kicker">09 · Alinhe as caixas</span>
+        <h2>Desafio — 4 níveis progressivos</h2>
+        <p class="lead">Renderização ao vivo de cada nível do desafio da apostila. Abra o CSS para conferir o código de cada um.</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3 style="font-size:15px;margin-bottom:12px;">Nível 1 — Caixas block empilhadas</h3>
+          <div class="stage" style="flex-direction:column;">
+            <div class="caixa">Caixa 1</div>
+            <div class="caixa">Caixa 2</div>
+            <div class="caixa">Caixa 3</div>
+          </div>
+          <details class="codewrap" style="margin-top:12px;">
+            <summary>Ver CSS</summary>
+            <pre class="code">.caixa {
+  display: block;
+  padding: 20px;
+  border: 2px solid #F59E0B;
+  margin: 10px;
+  background-color: #FFFBEB;
+}</pre>
+          </details>
+        </div>
+
+        <div class="card">
+          <h3 style="font-size:15px;margin-bottom:12px;">Nível 2 — inline-block lado a lado</h3>
+          <div class="stage">
+            <div class="caixa-inline">Caixa A</div><div class="caixa-inline">Caixa B</div><div class="caixa-inline">Caixa C</div>
+          </div>
+          <details class="codewrap" style="margin-top:12px;">
+            <summary>Ver CSS</summary>
+            <pre class="code">.caixa-inline {
+  display: inline-block;
+  width: 200px;
+  height: 150px;
+  padding: 15px;
+  border: 2px solid #F59E0B;
+  margin: 8px;
+  vertical-align: top;
+}</pre>
+          </details>
+        </div>
+
+        <div class="card">
+          <h3 style="font-size:15px;margin-bottom:12px;">Nível 3 — centralizar com margin: auto</h3>
+          <div class="stage">
+            <div class="nivel3-container">.container { width: 800px; margin: 0 auto; }</div>
+          </div>
+          <details class="codewrap" style="margin-top:12px;">
+            <summary>Ver CSS</summary>
+            <pre class="code">.container {
+  width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #E2E8F0;
+  background-color: #F8FAFC;
+}</pre>
+          </details>
+        </div>
+
+        <div class="card">
+          <h3 style="font-size:15px;margin-bottom:12px;">Nível 4 — box-sizing: border-box</h3>
+          <div class="stage">
+            <div class="nivel4-box">width: 300px total<br>(padding e border incluídos)</div>
+          </div>
+          <details class="codewrap" style="margin-top:12px;">
+            <summary>Ver CSS</summary>
+            <pre class="code">*, *::before, *::after { box-sizing: border-box; }
+
+.caixa-border-box {
+  width: 300px;   /* tamanho total sempre 300px */
+  padding: 30px;  /* incluído no width */
+  border: 5px solid #F59E0B;
+  /* content = 300 - 30*2 - 5*2 = 230px */
+}</pre>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 10. EXERCICIOS ===================== -->
+    <section class="block" id="exercicios">
+      <div class="block-head">
+        <span class="kicker">10 · Para revisar em aula</span>
+        <h2>Exercícios de fixação</h2>
+        <p class="lead">Use as demonstrações acima para responder — todas as respostas podem ser verificadas ao vivo nesta página.</p>
+      </div>
+      <div class="card">
+        <table class="demo-table">
+          <tbody>
+            <tr><td class="mono">1</td><td>Qual é a diferença entre padding e margin? Quando usar cada um?</td></tr>
+            <tr><td class="mono">2</td><td>Explique o fenômeno de margin collapse com um exemplo de código.</td></tr>
+            <tr><td class="mono">3</td><td>Qual é a diferença entre <code>box-sizing: content-box</code> e <code>border-box</code>? Qual é recomendado?</td></tr>
+            <tr><td class="mono">4</td><td>Crie um card de produto com: imagem, título, preço e botão. Use Box Model para espaçamentos.</td></tr>
+            <tr><td class="mono">5</td><td>Explique quando usar <code>display: block</code>, <code>inline</code> e <code>inline-block</code>. Dê exemplos de elementos HTML para cada.</td></tr>
+            <tr><td class="mono">6</td><td>Um elemento tem <code>width: 200px</code>, <code>padding: 20px</code> e <code>border: 2px</code>. Qual o tamanho total com content-box? E com border-box?</td></tr>
+            <tr><td class="mono">7</td><td>Como centralizar um elemento block horizontalmente na página? Escreva o CSS necessário.</td></tr>
+            <tr><td class="mono">8</td><td>Qual a diferença entre border e outline? Quando usar outline?</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="page">
+  Desenvolvimento Web — ADS 2º Semestre · Aula 07 — Box Model e Display · Prof. Anderson Pazin
+</footer>
+
+<script>
+(function(){
+  // ---------- Nav active state (scroll spy) ----------
+  var sections = Array.from(document.querySelectorAll('section.block'));
+  var slinks = Array.from(document.querySelectorAll('.slink'));
+  var tlinks = Array.from(document.querySelectorAll('.tlink'));
+  function setActive(id){
+    slinks.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+id); });
+    tlinks.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+id); });
+  }
+  try{
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ if(e.isIntersecting){ setActive(e.target.id); } });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    sections.forEach(function(s){ io.observe(s); });
+  }catch(e){}
+
+  // ---------- 1. Box model playground ----------
+  var bmW = document.getElementById('bmW'), bmH = document.getElementById('bmH'),
+      bmP = document.getElementById('bmP'), bmB = document.getElementById('bmB'), bmM = document.getElementById('bmM');
+  var bmContent = document.getElementById('bmContent'), bmPadding = document.getElementById('bmPadding'),
+      bmBorder = document.getElementById('bmBorder'), bmMargin = document.getElementById('bmMargin');
+  function updateBM(){
+    var w=+bmW.value,h=+bmH.value,p=+bmP.value,b=+bmB.value,m=+bmM.value;
+    document.getElementById('oW').textContent=w+'px';
+    document.getElementById('oH').textContent=h+'px';
+    document.getElementById('oP').textContent=p+'px';
+    document.getElementById('oB').textContent=b+'px';
+    document.getElementById('oM').textContent=m+'px';
+    bmContent.style.width=w+'px'; bmContent.style.height=h+'px';
+    bmContent.textContent = w+'×'+h;
+    bmPadding.style.padding=(p+18)+'px';
+    bmBorder.style.borderWidth=b+'px';
+    bmMargin.style.padding=(m+18)+'px';
+    var totalW = w + p*2 + b*2 + m*2;
+    var totalH = h + p*2 + b*2 + m*2;
+    document.getElementById('bmReadout').innerHTML =
+      '<span class="k">/* espaço total ocupado no fluxo, incl. margin */</span>\n'+
+      'total = <b>'+totalW+'px</b> × <b>'+totalH+'px</b>\n'+
+      '<span class="k">(content '+w+' + padding '+p+'×2 + border '+b+'×2 + margin '+m+'×2)</span>';
+    document.getElementById('bmCode').innerHTML =
+      '.elemento {\n'+
+      '  width: '+w+'px;\n  height: '+h+'px;\n'+
+      '  padding: '+p+'px;\n'+
+      '  border: '+b+'px solid #CA8A04;\n'+
+      '  margin: '+m+'px;\n}';
+  }
+  [bmW,bmH,bmP,bmB,bmM].forEach(function(el){ el.addEventListener('input', updateBM); });
+  updateBM();
+
+  // ---------- 2. Padding shorthand ----------
+  var pdButtons = document.querySelectorAll('#pdButtons .btn');
+  function updatePadding(vstr){
+    var parts = vstr.split(' ').map(Number);
+    var t,r,b,l;
+    if(parts.length===1){ t=r=b=l=parts[0]; }
+    else if(parts.length===2){ t=b=parts[0]; r=l=parts[1]; }
+    else if(parts.length===3){ t=parts[0]; r=l=parts[1]; b=parts[2]; }
+    else { t=parts[0]; r=parts[1]; b=parts[2]; l=parts[3]; }
+    ['top','right','bottom','left'].forEach(function(side){ document.getElementById('pd'+side.charAt(0).toUpperCase()+side.slice(1)).classList.remove('hot'); });
+    document.getElementById('pdTop').textContent=t; document.getElementById('pdTop').classList.add('hot');
+    document.getElementById('pdRight').textContent=r; document.getElementById('pdRight').classList.add('hot');
+    document.getElementById('pdBottom').textContent=b; document.getElementById('pdBottom').classList.add('hot');
+    document.getElementById('pdLeft').textContent=l; document.getElementById('pdLeft').classList.add('hot');
+    document.getElementById('pdReadout').innerHTML =
+      'padding: <b>'+vstr.split(' ').map(function(n){return n+'px';}).join(' ')+';</b>\n'+
+      '<span class="k">/* top '+t+'px · right '+r+'px · bottom '+b+'px · left '+l+'px */</span>';
+  }
+  pdButtons.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      pdButtons.forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      updatePadding(btn.getAttribute('data-v'));
+    });
+  });
+  updatePadding('10');
+
+  // ---------- 3. Border ----------
+  var brBox = document.getElementById('brBox');
+  var brState = { style:'solid', width:3, radius:'8' };
+  function updateBorder(){
+    brBox.style.borderStyle = brState.style === 'none' ? 'none' : brState.style;
+    brBox.style.borderWidth = brState.width+'px';
+    brBox.style.borderColor = 'var(--mm-border)';
+    brBox.style.borderRadius = /%/.test(brState.radius) ? brState.radius : brState.radius.split(' ').map(function(n){return n+'px';}).join(' ');
+    document.getElementById('oBrW').textContent = brState.width+'px';
+    document.getElementById('brReadout').innerHTML =
+      'border: <b>'+brState.width+'px '+brState.style+' #CA8A04;</b>\n'+
+      'border-radius: <b>'+(/%/.test(brState.radius)?brState.radius:brState.radius.split(' ').map(function(n){return n+'px';}).join(' '))+';</b>';
+  }
+  document.querySelectorAll('#brStyleButtons .btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('#brStyleButtons .btn').forEach(function(b){b.classList.remove('active');});
+      btn.classList.add('active'); brState.style = btn.getAttribute('data-v'); updateBorder();
+    });
+  });
+  document.querySelectorAll('#brRadiusButtons .btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('#brRadiusButtons .btn').forEach(function(b){b.classList.remove('active');});
+      btn.classList.add('active'); brState.radius = btn.getAttribute('data-v'); updateBorder();
+    });
+  });
+  document.getElementById('brW').addEventListener('input', function(){ brState.width = +this.value; updateBorder(); });
+  updateBorder();
+
+  // ---------- 5. Margin: auto centering ----------
+  var autoW = document.getElementById('autoW'), autoBox = document.getElementById('autoBox');
+  autoW.addEventListener('input', function(){
+    autoBox.style.width = this.value+'%';
+    document.getElementById('oAutoW').textContent = this.value+'%';
+  });
+
+  // ---------- 5. Margin collapse ----------
+  var collapseAr = document.getElementById('collapseAr'), collapseBr = document.getElementById('collapseBr'),
+      collapseBreak = document.getElementById('collapseBreak'), collapseWrap = document.getElementById('collapseWrap'),
+      collapseA = document.getElementById('collapseA'), collapseB = document.getElementById('collapseB');
+  function updateCollapse(){
+    var a=+collapseAr.value, b=+collapseBr.value, broken=collapseBreak.checked;
+    document.getElementById('oCA').textContent=a+'px';
+    document.getElementById('oCB').textContent=b+'px';
+    collapseA.style.marginBottom=a+'px';
+    collapseB.style.marginTop=b+'px';
+    if(broken){
+      collapseWrap.style.display='flex';
+      var gap = a+b;
+      document.getElementById('collapseGapLabel').textContent = 'sem collapse (flex) → gap real = '+a+'px + '+b+'px = '+gap+'px';
+      collapseWrap.style.gap = '0px';
+    } else {
+      collapseWrap.style.display='block';
+      var collapsed = Math.max(a,b);
+      document.getElementById('collapseGapLabel').textContent = 'collapse → maior margem prevalece = '+collapsed+'px (não '+(a+b)+'px)';
+    }
+  }
+  [collapseAr,collapseBr,collapseBreak].forEach(function(el){ el.addEventListener('input', updateCollapse); });
+  updateCollapse();
+
+  // ---------- 6. box-sizing comparison ----------
+  var bsW=document.getElementById('bsW'), bsP=document.getElementById('bsP'), bsB=document.getElementById('bsB');
+  var cbBox=document.getElementById('cbBox'), bbBox=document.getElementById('bbBox');
+  function updateBS(){
+    var w=+bsW.value,p=+bsP.value,b=+bsB.value;
+    document.getElementById('oBsW').textContent=w+'px';
+    document.getElementById('oBsP').textContent=p+'px';
+    document.getElementById('oBsB').textContent=b+'px';
+    [cbBox,bbBox].forEach(function(box){
+      box.style.width=w+'px'; box.style.padding=p+'px'; box.style.borderWidth=b+'px';
+    });
+    var cbTotal = w + p*2 + b*2;
+    cbBox.style.height = '90px';
+    bbBox.style.height = '90px';
+    document.getElementById('cbReadout').innerHTML =
+      'box-sizing: content-box\n'+
+      'width declarado: <b>'+w+'px</b>\n'+
+      'tamanho total: <b>'+cbTotal+'px</b>\n'+
+      '<span class="k">(w '+w+' + padding '+p+'×2 + border '+b+'×2)</span>';
+    document.getElementById('bbReadout').innerHTML =
+      'box-sizing: border-box\n'+
+      'width declarado: <b>'+w+'px</b>\n'+
+      'tamanho total: <b>'+w+'px</b> <span class="k">(sempre igual ao width)</span>\n'+
+      'área de conteúdo real: <b>'+Math.max(0,w-p*2-b*2)+'px</b>';
+  }
+  [bsW,bsP,bsB].forEach(function(el){ el.addEventListener('input', updateBS); });
+  updateBS();
+
+  // ---------- 7. Display ----------
+  var dispButtons = document.querySelectorAll('#dispButtons .btn');
+  var dispItems = [document.getElementById('d1'),document.getElementById('d2'),document.getElementById('d3')];
+  dispButtons.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      dispButtons.forEach(function(b){b.classList.remove('active');});
+      btn.classList.add('active');
+      var v = btn.getAttribute('data-v');
+      dispItems.forEach(function(el){ el.style.display = v; });
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

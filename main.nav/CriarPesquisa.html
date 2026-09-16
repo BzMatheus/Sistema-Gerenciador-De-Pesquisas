@@ -4,15 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Criar Pesquisa</title>
+    <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
     <head>
+        <nav>
+        <ul class="navigation">
+            <li><a href="/main.nav/CriarPesquisa.html">Gerenciar Pesquisas</a></li>
+            <li><a href="/main.nav/CriarQuestionario.html">Gerenciar Questionarios</a></li>
+            <li><a href="/main.nav/senhas.html">Gerar Senhas</a></li>
+        </ul>
+    </nav>
         <h1>CRIAR PESQUISA</h1>
+        
     </head>
     <main>
         <!--ONDE O USUARIO CRIA A PESQUISA-->
-        <form action="/CriarPesquisa" method="get">
-            <label for="Nome">Nome</label>
+        <form action="/CriarPesquisa" method="get" id="form_CP">
+            <label for="Nome" id="name_CP">Nome</label>
             <input type="text" name="Nome">
             <label for="Descrição">Descrição</label>
             <input type="text" name="Descrição">
